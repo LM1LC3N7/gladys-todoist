@@ -55,32 +55,36 @@ avec la 5.1.
   applications, un projet partagé, un e-mail vers votre boîte de réception).
 - **Tâche terminée** : une tâche a été cochée dans Todoist. Une tâche
   récurrente compte aussi : Todoist la passe à sa date suivante, la variable
-  `{{recurring}}` vaut alors vrai.
+  `{{triggerEvent.data.recurring}}` vaut alors vrai.
 
 Chaque déclencheur peut être limité à un **projet** (saisi exactement comme
 dans Todoist, majuscules comprises) et à certaines **priorités**. Variables :
-`{{content}}`, `{{project}}`, `{{priority}}` (p1 à p4), `{{due}}`
-(« 2026-10-14 19:00 »), `{{labels}}`, `{{url}}` (la tâche dans l'application
-web Todoist), `{{all_day}}`. Les modifications faites depuis Gladys (une
+`{{triggerEvent.data.content}}`, `{{triggerEvent.data.project}}`,
+`{{triggerEvent.data.priority}}` (p1 à p4), `{{triggerEvent.data.due}}`
+(« 2026-10-14 19:00 »), `{{triggerEvent.data.labels}}`,
+`{{triggerEvent.data.url}}` (la tâche dans l'application web Todoist),
+`{{triggerEvent.data.all_day}}`. Les modifications faites depuis Gladys (une
 action de scène, le widget) ne déclenchent ni « tâche ajoutée » ni « tâche
 terminée » : une scène ne peut pas boucler à travers l'intégration.
 
-Les actions renvoient des valeurs pour les étapes suivantes :
+Les actions renvoient des valeurs pour les étapes suivantes. Les actions
+suivantes de la scène les trouvent dans leur liste de variables (écrites
+`{{<étape>.<action>.<clé>}}`, par exemple `{{0.0.count}}` quand
+**Lire des tâches** est la première action de la scène) :
 
-- **Ajouter une tâche** donne `{{id}}`, `{{url}}`, `{{project}}` et
-  `{{due}}`. L'échéance s'écrit comme dans Todoist (« demain à 18h », « tous
-  les lundis ») ; un projet vide est votre boîte de réception. Avec l'**ajout
-  rapide**, le texte est lu comme dans les applications Todoist (« Appeler
-  maman demain 18h #Maison p2 ») et les autres champs sont ignorés.
+- **Ajouter une tâche** donne `id`, `url`, `project` et `due`. L'échéance
+  s'écrit comme dans Todoist (« demain à 18h », « tous les lundis ») ; un
+  projet vide est votre boîte de réception. Avec l'**ajout rapide**, le texte
+  est lu comme dans les applications Todoist (« Appeler maman demain
+  18h #Maison p2 ») et les autres champs sont ignorés.
 - **Terminer une tâche** ferme la tâche ouverte dont le texte correspond,
   sans tenir compte des majuscules ni des accents (sinon la première qui
   contient le texte, la plus urgente gagnant), éventuellement seulement dans
-  un projet ou un filtre. `{{done}}` vaut faux si aucune tâche ne correspond.
+  un projet ou un filtre. `done` vaut faux si aucune tâche ne correspond.
 - **Lire des tâches** prend un filtre Todoist (`today | overdue` par défaut)
-  et donne `{{count}}`, `{{overdue_count}}`, `{{list}}` (une ligne par tâche,
-  dans la langue de votre compte Todoist) et la prochaine tâche :
-  `{{next_task}}`, `{{next_due}}`, `{{next_project}}`, `{{next_priority}}`,
-  `{{next_url}}`.
+  et donne `count`, `overdue_count`, `list` (une ligne par tâche, dans la
+  langue de votre compte Todoist) et la prochaine tâche : `next_task`,
+  `next_due`, `next_project`, `next_priority`, `next_url`.
 
 Les filtres autres que celui par défaut sont évalués par Todoist : écrivez-les
 dans la langue choisie dans **Langue de vos filtres** (anglais par défaut).

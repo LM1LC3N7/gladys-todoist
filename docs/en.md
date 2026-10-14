@@ -51,31 +51,37 @@ The forms need Gladys 5.2; the check-off buttons work on 5.1.
 - **Task added**: a task was added in Todoist (the apps, a shared project, an
   email to your Inbox).
 - **Task completed**: a task was checked off in Todoist. A recurring task
-  counts too: Todoist moves it to its next date, the `{{recurring}}`
-  variable is then true.
+  counts too: Todoist moves it to its next date, the
+  `{{triggerEvent.data.recurring}}` variable is then true.
 
 Each trigger can be limited to a **project** (typed exactly as in Todoist,
-case included) and to some **priorities**. Variables: `{{content}}`,
-`{{project}}`, `{{priority}}` (p1 to p4), `{{due}}` ("2026-10-14 19:00"),
-`{{labels}}`, `{{url}}` (the task in the Todoist web app), `{{all_day}}`.
-The changes made through Gladys (a scene action, the widget) fire no "task
-added" or "task completed", so a scene cannot loop through the integration.
+case included) and to some **priorities**. Variables:
+`{{triggerEvent.data.content}}`, `{{triggerEvent.data.project}}`,
+`{{triggerEvent.data.priority}}` (p1 to p4), `{{triggerEvent.data.due}}`
+("2026-10-14 19:00"), `{{triggerEvent.data.labels}}`,
+`{{triggerEvent.data.url}}` (the task in the Todoist web app),
+`{{triggerEvent.data.all_day}}`. The changes made through Gladys (a scene
+action, the widget) fire no "task added" or "task completed", so a scene
+cannot loop through the integration.
 
-The actions return values for the steps that follow:
+The actions return values for the steps that follow. The following actions
+of the scene find them in their variable list (written
+`{{<step>.<action>.<key>}}`, for instance `{{0.0.count}}` when
+**Read tasks** is the first action of the scene):
 
-- **Add a task** gives `{{id}}`, `{{url}}`, `{{project}}` and `{{due}}`. The
-  due date is written as in Todoist ("tomorrow at 6pm", "every monday"); a
-  project left empty is your Inbox. With **Quick Add**, the text is read like
-  the Todoist apps do ("Call mum tomorrow 6pm #Home p2") and the other fields
-  are ignored.
+- **Add a task** gives `id`, `url`, `project` and `due`. The due date is
+  written as in Todoist ("tomorrow at 6pm", "every monday"); a project left
+  empty is your Inbox. With **Quick Add**, the text is read like the Todoist
+  apps do ("Call mum tomorrow 6pm #Home p2") and the other fields are
+  ignored.
 - **Complete a task** closes the open task whose text matches, case and
   accents ignored (else the first one containing the text, the one due first
-  winning), optionally only in a project or a filter. `{{done}}` is false when
+  winning), optionally only in a project or a filter. `done` is false when
   no task matches.
 - **Read tasks** takes a Todoist filter (`today | overdue` by default) and
-  gives `{{count}}`, `{{overdue_count}}`, `{{list}}` (one line per task, in
-  the language of your Todoist account) and the next task: `{{next_task}}`,
-  `{{next_due}}`, `{{next_project}}`, `{{next_priority}}`, `{{next_url}}`.
+  gives `count`, `overdue_count`, `list` (one line per task, in the language
+  of your Todoist account) and the next task: `next_task`, `next_due`,
+  `next_project`, `next_priority`, `next_url`.
 
 Filters other than the default are evaluated by Todoist: write them in the
 language chosen in **Language of your filters** (English by default).
