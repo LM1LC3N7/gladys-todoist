@@ -1,0 +1,1161 @@
+{
+  "manifest_version": 1,
+  "type": "provider",
+  "name": "Todoist",
+  "description": {
+    "en": "Unofficial connector: your Todoist tasks on the dashboard and in your scenes.",
+    "fr": "Connecteur non officiel : vos tâches Todoist sur le tableau de bord et les scènes."
+  },
+  "version": "0.1.0",
+  "docker_image": "ghcr.io/lm1lc3n7/gladys-todoist:0.1.0",
+  "gladys_version": ">=5.1.0",
+  "cover_image": "https://raw.githubusercontent.com/LM1LC3N7/gladys-todoist/main/cover.png",
+  "categories": ["services"],
+  "transports": ["cloud"],
+  "config_schema": [
+    {
+      "key": "intro",
+      "type": "section",
+      "label": {
+        "en": "Todoist tasks",
+        "fr": "Tâches Todoist"
+      },
+      "description": {
+        "en": "Unofficial connector, not affiliated with Doist (the makers of Todoist). It reads your Todoist account with your personal API token, found in Todoist under Settings > Integrations > Developer: the token is sent only to Todoist (api.todoist.com), stored encrypted by Gladys and never logged. You get a dashboard widget (today's tasks, check off, add), scene actions (add a task, complete a task, read tasks) and scene triggers (task due, task added, task completed). The tasks are synced incrementally (every 2 minutes by default), far below the limits Todoist publishes.",
+        "fr": "Connecteur non officiel, sans lien avec Doist (l'éditeur de Todoist). Il lit votre compte Todoist avec votre jeton d'API personnel, disponible dans Todoist sous Paramètres > Intégrations > Développeur : le jeton n'est envoyé qu'à Todoist (api.todoist.com), stocké chiffré par Gladys et jamais journalisé. Vous obtenez un widget (les tâches du jour, cocher, ajouter), des actions de scène (ajouter une tâche, terminer une tâche, lire des tâches) et des déclencheurs de scène (tâche à échéance, tâche ajoutée, tâche terminée). Les tâches sont synchronisées de façon incrémentale (toutes les 2 minutes par défaut), très en dessous des limites publiées par Todoist."
+      },
+      "links": [
+        {
+          "url": "https://app.todoist.com/app/settings/integrations",
+          "label": {
+            "en": "Your Todoist API token",
+            "fr": "Votre jeton d'API Todoist"
+          }
+        },
+        {
+          "url": "https://github.com/LM1LC3N7/gladys-todoist/blob/main/docs/fr.md",
+          "label": {
+            "en": "Guide (French)",
+            "fr": "Guide (français)"
+          }
+        },
+        {
+          "url": "https://github.com/LM1LC3N7/gladys-todoist/blob/main/docs/en.md",
+          "label": {
+            "en": "Guide (English)",
+            "fr": "Guide (anglais)"
+          }
+        }
+      ]
+    },
+    {
+      "key": "api_token",
+      "type": "secret",
+      "label": {
+        "en": "Todoist API token",
+        "fr": "Jeton d'API Todoist"
+      },
+      "description": {
+        "en": "Todoist: Settings > Integrations > Developer > Copy API token. Sent only to Todoist.",
+        "fr": "Todoist : Paramètres > Intégrations > Développeur > Copier le jeton d'API. Envoyé uniquement à Todoist."
+      },
+      "required": true
+    },
+    {
+      "key": "watch_tasks",
+      "type": "boolean",
+      "label": {
+        "en": "Watch the tasks (needed by the scene triggers)",
+        "fr": "Surveiller les tâches (nécessaire aux déclencheurs de scène)"
+      },
+      "description": {
+        "en": "Syncs the tasks in the background so that \"task due\", \"task added\" and \"task completed\" work. Off: no background call, the widget and the scene actions read Todoist when they need it.",
+        "fr": "Synchronise les tâches en arrière-plan pour que « tâche à échéance », « tâche ajoutée » et « tâche terminée » fonctionnent. Désactivé : aucun appel en arrière-plan, le widget et les actions de scène lisent Todoist quand ils en ont besoin."
+      },
+      "required": false,
+      "default": true
+    },
+    {
+      "key": "poll_minutes",
+      "type": "number",
+      "label": {
+        "en": "Sync interval (minutes)",
+        "fr": "Intervalle de synchronisation (minutes)"
+      },
+      "description": {
+        "en": "How often the changes are fetched (one light request). A change made through Gladys is read back right away.",
+        "fr": "Fréquence de lecture des changements (une requête légère). Une modification faite depuis Gladys est relue aussitôt."
+      },
+      "required": false,
+      "default": 2,
+      "min": 1,
+      "max": 60
+    },
+    {
+      "key": "due_hour",
+      "type": "number",
+      "label": {
+        "en": "Hour of the \"task due\" trigger for a date without a time",
+        "fr": "Heure du déclencheur « tâche à échéance » pour une date sans heure"
+      },
+      "description": {
+        "en": "A task due on a day without a time fires \"task due\" at this hour (0 to 23, time zone of your Todoist account).",
+        "fr": "Une tâche due un jour sans heure déclenche « tâche à échéance » à cette heure (0 à 23, fuseau horaire de votre compte Todoist)."
+      },
+      "required": false,
+      "default": 9,
+      "min": 0,
+      "max": 23
+    },
+    {
+      "key": "filter_lang",
+      "type": "select",
+      "label": {
+        "en": "Language of your filters",
+        "fr": "Langue de vos filtres"
+      },
+      "description": {
+        "en": "The language you write Todoist filters in, in the widget and the scenes (\"today | overdue\" is English, \"aujourd'hui | en retard\" French).",
+        "fr": "La langue dans laquelle vous écrivez les filtres Todoist, dans le widget et les scènes (« today | overdue » est en anglais, « aujourd'hui | en retard » en français)."
+      },
+      "required": false,
+      "default": "en",
+      "options": [
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "Anglais"
+          }
+        },
+        {
+          "value": "fr",
+          "label": {
+            "en": "French",
+            "fr": "Français"
+          }
+        },
+        {
+          "value": "de",
+          "label": {
+            "en": "German",
+            "fr": "Allemand"
+          }
+        },
+        {
+          "value": "es",
+          "label": {
+            "en": "Spanish",
+            "fr": "Espagnol"
+          }
+        },
+        {
+          "value": "it",
+          "label": {
+            "en": "Italian",
+            "fr": "Italien"
+          }
+        },
+        {
+          "value": "nl",
+          "label": {
+            "en": "Dutch",
+            "fr": "Néerlandais"
+          }
+        },
+        {
+          "value": "pt",
+          "label": {
+            "en": "Portuguese",
+            "fr": "Portugais"
+          }
+        },
+        {
+          "value": "da",
+          "label": {
+            "en": "Danish",
+            "fr": "Danois"
+          }
+        },
+        {
+          "value": "sv",
+          "label": {
+            "en": "Swedish",
+            "fr": "Suédois"
+          }
+        },
+        {
+          "value": "nb",
+          "label": {
+            "en": "Norwegian",
+            "fr": "Norvégien"
+          }
+        },
+        {
+          "value": "fi",
+          "label": {
+            "en": "Finnish",
+            "fr": "Finnois"
+          }
+        },
+        {
+          "value": "pl",
+          "label": {
+            "en": "Polish",
+            "fr": "Polonais"
+          }
+        },
+        {
+          "value": "ru",
+          "label": {
+            "en": "Russian",
+            "fr": "Russe"
+          }
+        },
+        {
+          "value": "ja",
+          "label": {
+            "en": "Japanese",
+            "fr": "Japonais"
+          }
+        },
+        {
+          "value": "ko",
+          "label": {
+            "en": "Korean",
+            "fr": "Coréen"
+          }
+        },
+        {
+          "value": "zh",
+          "label": {
+            "en": "Chinese (simplified)",
+            "fr": "Chinois (simplifié)"
+          }
+        },
+        {
+          "value": "tw",
+          "label": {
+            "en": "Chinese (traditional)",
+            "fr": "Chinois (traditionnel)"
+          }
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "key": "test_connection",
+      "timeout_seconds": 30,
+      "label": {
+        "en": "Test the account",
+        "fr": "Tester le compte"
+      },
+      "description": {
+        "en": "Syncs with Todoist and shows your number of tasks and projects, the tasks due today and overdue, and the time zone of the account.",
+        "fr": "Se synchronise avec Todoist et affiche votre nombre de tâches et de projets, les tâches du jour et en retard, et le fuseau horaire du compte."
+      }
+    }
+  ],
+  "widgets": [
+    {
+      "key": "tasks",
+      "label": {
+        "en": "Todoist tasks",
+        "fr": "Tâches Todoist"
+      },
+      "description": {
+        "en": "Today's Todoist tasks (or a project, a filter), to check off or add.",
+        "fr": "Les tâches Todoist du jour (ou d'un projet, d'un filtre), à cocher ou ajouter."
+      },
+      "icon": "check-square",
+      "action_timeout_seconds": 30,
+      "settings": [
+        {
+          "key": "filter",
+          "type": "string",
+          "required": false,
+          "label": {
+            "en": "Todoist filter (empty: today | overdue)",
+            "fr": "Filtre Todoist (vide : today | overdue)"
+          },
+          "placeholder": {
+            "en": "today | overdue",
+            "fr": "today | overdue"
+          }
+        },
+        {
+          "key": "project",
+          "type": "string",
+          "required": false,
+          "label": {
+            "en": "Or a project name (replaces the filter)",
+            "fr": "Ou un nom de projet (remplace le filtre)"
+          },
+          "description": {
+            "en": "Shows every task of this project; the \"Add\" form puts new tasks in it.",
+            "fr": "Affiche toutes les tâches de ce projet ; le formulaire « Ajouter » y place les nouvelles tâches."
+          },
+          "placeholder": {
+            "en": "Groceries",
+            "fr": "Courses"
+          }
+        }
+      ]
+    }
+  ],
+  "scene_triggers": [
+    {
+      "key": "task_due",
+      "label": {
+        "en": "Todoist task due",
+        "fr": "Tâche Todoist à échéance"
+      },
+      "description": {
+        "en": "A task reached its due time; a task due on a day without a time fires at the hour set in the configuration. Needs the tasks watched.",
+        "fr": "Une tâche atteint son heure d'échéance ; une tâche due un jour sans heure se déclenche à l'heure réglée dans la configuration. Nécessite la surveillance des tâches."
+      },
+      "fields": [
+        {
+          "key": "project",
+          "type": "string",
+          "required": false,
+          "label": {
+            "en": "Project name, as in Todoist (empty: any)",
+            "fr": "Nom du projet, comme dans Todoist (vide : tous)"
+          },
+          "placeholder": {
+            "en": "Home",
+            "fr": "Maison"
+          }
+        },
+        {
+          "key": "priority",
+          "type": "multi_select",
+          "required": false,
+          "label": {
+            "en": "Priorities (none ticked: any)",
+            "fr": "Priorités (aucune cochée : toutes)"
+          },
+          "options": [
+            {
+              "value": "p1",
+              "label": {
+                "en": "P1 (urgent, red)",
+                "fr": "P1 (urgente, rouge)"
+              }
+            },
+            {
+              "value": "p2",
+              "label": {
+                "en": "P2 (high, orange)",
+                "fr": "P2 (haute, orange)"
+              }
+            },
+            {
+              "value": "p3",
+              "label": {
+                "en": "P3 (medium, blue)",
+                "fr": "P3 (moyenne, bleue)"
+              }
+            },
+            {
+              "value": "p4",
+              "label": {
+                "en": "P4 (no priority)",
+                "fr": "P4 (sans priorité)"
+              }
+            }
+          ]
+        }
+      ],
+      "variables": [
+        {
+          "key": "content",
+          "type": "string",
+          "label": {
+            "en": "Task",
+            "fr": "Tâche"
+          }
+        },
+        {
+          "key": "project",
+          "type": "string",
+          "label": {
+            "en": "Project",
+            "fr": "Projet"
+          }
+        },
+        {
+          "key": "priority",
+          "type": "string",
+          "label": {
+            "en": "Priority (p1 to p4)",
+            "fr": "Priorité (p1 à p4)"
+          }
+        },
+        {
+          "key": "due",
+          "type": "string",
+          "label": {
+            "en": "Due (date and time)",
+            "fr": "Échéance (date et heure)"
+          }
+        },
+        {
+          "key": "all_day",
+          "type": "boolean",
+          "label": {
+            "en": "Date without a time",
+            "fr": "Date sans heure"
+          }
+        },
+        {
+          "key": "labels",
+          "type": "string",
+          "label": {
+            "en": "Labels, separated by commas",
+            "fr": "Étiquettes, séparées par des virgules"
+          }
+        },
+        {
+          "key": "url",
+          "type": "string",
+          "label": {
+            "en": "Link to the task",
+            "fr": "Lien vers la tâche"
+          }
+        }
+      ]
+    },
+    {
+      "key": "task_added",
+      "label": {
+        "en": "Todoist task added",
+        "fr": "Tâche Todoist ajoutée"
+      },
+      "description": {
+        "en": "A task was added in Todoist (an app, a shared project, an email). The tasks added through Gladys do not fire it. Needs the tasks watched.",
+        "fr": "Une tâche a été ajoutée dans Todoist (une application, un projet partagé, un e-mail). Les tâches ajoutées depuis Gladys ne le déclenchent pas. Nécessite la surveillance des tâches."
+      },
+      "fields": [
+        {
+          "key": "project",
+          "type": "string",
+          "required": false,
+          "label": {
+            "en": "Project name, as in Todoist (empty: any)",
+            "fr": "Nom du projet, comme dans Todoist (vide : tous)"
+          },
+          "placeholder": {
+            "en": "Home",
+            "fr": "Maison"
+          }
+        },
+        {
+          "key": "priority",
+          "type": "multi_select",
+          "required": false,
+          "label": {
+            "en": "Priorities (none ticked: any)",
+            "fr": "Priorités (aucune cochée : toutes)"
+          },
+          "options": [
+            {
+              "value": "p1",
+              "label": {
+                "en": "P1 (urgent, red)",
+                "fr": "P1 (urgente, rouge)"
+              }
+            },
+            {
+              "value": "p2",
+              "label": {
+                "en": "P2 (high, orange)",
+                "fr": "P2 (haute, orange)"
+              }
+            },
+            {
+              "value": "p3",
+              "label": {
+                "en": "P3 (medium, blue)",
+                "fr": "P3 (moyenne, bleue)"
+              }
+            },
+            {
+              "value": "p4",
+              "label": {
+                "en": "P4 (no priority)",
+                "fr": "P4 (sans priorité)"
+              }
+            }
+          ]
+        }
+      ],
+      "variables": [
+        {
+          "key": "content",
+          "type": "string",
+          "label": {
+            "en": "Task",
+            "fr": "Tâche"
+          }
+        },
+        {
+          "key": "project",
+          "type": "string",
+          "label": {
+            "en": "Project",
+            "fr": "Projet"
+          }
+        },
+        {
+          "key": "priority",
+          "type": "string",
+          "label": {
+            "en": "Priority (p1 to p4)",
+            "fr": "Priorité (p1 à p4)"
+          }
+        },
+        {
+          "key": "due",
+          "type": "string",
+          "label": {
+            "en": "Due (date and time)",
+            "fr": "Échéance (date et heure)"
+          }
+        },
+        {
+          "key": "all_day",
+          "type": "boolean",
+          "label": {
+            "en": "Date without a time",
+            "fr": "Date sans heure"
+          }
+        },
+        {
+          "key": "labels",
+          "type": "string",
+          "label": {
+            "en": "Labels, separated by commas",
+            "fr": "Étiquettes, séparées par des virgules"
+          }
+        },
+        {
+          "key": "url",
+          "type": "string",
+          "label": {
+            "en": "Link to the task",
+            "fr": "Lien vers la tâche"
+          }
+        }
+      ]
+    },
+    {
+      "key": "task_completed",
+      "label": {
+        "en": "Todoist task completed",
+        "fr": "Tâche Todoist terminée"
+      },
+      "description": {
+        "en": "A task was checked off in Todoist, a recurring one included (it then moves to its next date). The tasks completed through Gladys do not fire it. Needs the tasks watched.",
+        "fr": "Une tâche a été cochée dans Todoist, récurrente comprise (elle passe alors à sa date suivante). Les tâches terminées depuis Gladys ne le déclenchent pas. Nécessite la surveillance des tâches."
+      },
+      "fields": [
+        {
+          "key": "project",
+          "type": "string",
+          "required": false,
+          "label": {
+            "en": "Project name, as in Todoist (empty: any)",
+            "fr": "Nom du projet, comme dans Todoist (vide : tous)"
+          },
+          "placeholder": {
+            "en": "Home",
+            "fr": "Maison"
+          }
+        },
+        {
+          "key": "priority",
+          "type": "multi_select",
+          "required": false,
+          "label": {
+            "en": "Priorities (none ticked: any)",
+            "fr": "Priorités (aucune cochée : toutes)"
+          },
+          "options": [
+            {
+              "value": "p1",
+              "label": {
+                "en": "P1 (urgent, red)",
+                "fr": "P1 (urgente, rouge)"
+              }
+            },
+            {
+              "value": "p2",
+              "label": {
+                "en": "P2 (high, orange)",
+                "fr": "P2 (haute, orange)"
+              }
+            },
+            {
+              "value": "p3",
+              "label": {
+                "en": "P3 (medium, blue)",
+                "fr": "P3 (moyenne, bleue)"
+              }
+            },
+            {
+              "value": "p4",
+              "label": {
+                "en": "P4 (no priority)",
+                "fr": "P4 (sans priorité)"
+              }
+            }
+          ]
+        }
+      ],
+      "variables": [
+        {
+          "key": "content",
+          "type": "string",
+          "label": {
+            "en": "Task",
+            "fr": "Tâche"
+          }
+        },
+        {
+          "key": "project",
+          "type": "string",
+          "label": {
+            "en": "Project",
+            "fr": "Projet"
+          }
+        },
+        {
+          "key": "priority",
+          "type": "string",
+          "label": {
+            "en": "Priority (p1 to p4)",
+            "fr": "Priorité (p1 à p4)"
+          }
+        },
+        {
+          "key": "due",
+          "type": "string",
+          "label": {
+            "en": "Due (date and time)",
+            "fr": "Échéance (date et heure)"
+          }
+        },
+        {
+          "key": "all_day",
+          "type": "boolean",
+          "label": {
+            "en": "Date without a time",
+            "fr": "Date sans heure"
+          }
+        },
+        {
+          "key": "labels",
+          "type": "string",
+          "label": {
+            "en": "Labels, separated by commas",
+            "fr": "Étiquettes, séparées par des virgules"
+          }
+        },
+        {
+          "key": "url",
+          "type": "string",
+          "label": {
+            "en": "Link to the task",
+            "fr": "Lien vers la tâche"
+          }
+        },
+        {
+          "key": "recurring",
+          "type": "boolean",
+          "label": {
+            "en": "Recurring task (moved to its next date)",
+            "fr": "Tâche récurrente (passée à sa date suivante)"
+          }
+        }
+      ]
+    }
+  ],
+  "scene_actions": [
+    {
+      "key": "add_task",
+      "label": {
+        "en": "Add a Todoist task",
+        "fr": "Ajouter une tâche Todoist"
+      },
+      "description": {
+        "en": "Creates a task. The due date is written as in Todoist (\"tomorrow at 6pm\", \"every monday\"). With Quick Add, the text is read like the Todoist apps do (#project @label p1 dates) and the other fields are ignored.",
+        "fr": "Crée une tâche. L'échéance s'écrit comme dans Todoist (« demain à 18h », « tous les lundis »). Avec l'ajout rapide, le texte est lu comme dans les applications Todoist (#projet @étiquette p1 dates) et les autres champs sont ignorés."
+      },
+      "timeout_seconds": 30,
+      "fields": [
+        {
+          "key": "content",
+          "type": "string",
+          "required": true,
+          "label": {
+            "en": "Task",
+            "fr": "Tâche"
+          },
+          "placeholder": {
+            "en": "Buy bread",
+            "fr": "Acheter du pain"
+          }
+        },
+        {
+          "key": "due_string",
+          "type": "string",
+          "required": false,
+          "label": {
+            "en": "Due date (optional)",
+            "fr": "Échéance (facultatif)"
+          },
+          "placeholder": {
+            "en": "tomorrow at 6pm",
+            "fr": "demain à 18h"
+          }
+        },
+        {
+          "key": "due_lang",
+          "type": "select",
+          "required": false,
+          "label": {
+            "en": "Language of the due date (empty: your Todoist language)",
+            "fr": "Langue de l'échéance (vide : votre langue Todoist)"
+          },
+          "options": [
+            {
+              "value": "en",
+              "label": {
+                "en": "English",
+                "fr": "Anglais"
+              }
+            },
+            {
+              "value": "fr",
+              "label": {
+                "en": "French",
+                "fr": "Français"
+              }
+            },
+            {
+              "value": "de",
+              "label": {
+                "en": "German",
+                "fr": "Allemand"
+              }
+            },
+            {
+              "value": "es",
+              "label": {
+                "en": "Spanish",
+                "fr": "Espagnol"
+              }
+            },
+            {
+              "value": "it",
+              "label": {
+                "en": "Italian",
+                "fr": "Italien"
+              }
+            },
+            {
+              "value": "nl",
+              "label": {
+                "en": "Dutch",
+                "fr": "Néerlandais"
+              }
+            },
+            {
+              "value": "pt",
+              "label": {
+                "en": "Portuguese",
+                "fr": "Portugais"
+              }
+            },
+            {
+              "value": "da",
+              "label": {
+                "en": "Danish",
+                "fr": "Danois"
+              }
+            },
+            {
+              "value": "sv",
+              "label": {
+                "en": "Swedish",
+                "fr": "Suédois"
+              }
+            },
+            {
+              "value": "nb",
+              "label": {
+                "en": "Norwegian",
+                "fr": "Norvégien"
+              }
+            },
+            {
+              "value": "fi",
+              "label": {
+                "en": "Finnish",
+                "fr": "Finnois"
+              }
+            },
+            {
+              "value": "pl",
+              "label": {
+                "en": "Polish",
+                "fr": "Polonais"
+              }
+            },
+            {
+              "value": "ru",
+              "label": {
+                "en": "Russian",
+                "fr": "Russe"
+              }
+            },
+            {
+              "value": "ja",
+              "label": {
+                "en": "Japanese",
+                "fr": "Japonais"
+              }
+            },
+            {
+              "value": "ko",
+              "label": {
+                "en": "Korean",
+                "fr": "Coréen"
+              }
+            },
+            {
+              "value": "zh",
+              "label": {
+                "en": "Chinese (simplified)",
+                "fr": "Chinois (simplifié)"
+              }
+            },
+            {
+              "value": "tw",
+              "label": {
+                "en": "Chinese (traditional)",
+                "fr": "Chinois (traditionnel)"
+              }
+            }
+          ]
+        },
+        {
+          "key": "project",
+          "type": "string",
+          "required": false,
+          "label": {
+            "en": "Project name (empty: Inbox)",
+            "fr": "Nom du projet (vide : Boîte de réception)"
+          },
+          "placeholder": {
+            "en": "Home",
+            "fr": "Maison"
+          }
+        },
+        {
+          "key": "priority",
+          "type": "select",
+          "required": false,
+          "label": {
+            "en": "Priority",
+            "fr": "Priorité"
+          },
+          "default": "p4",
+          "options": [
+            {
+              "value": "p1",
+              "label": {
+                "en": "P1 (urgent, red)",
+                "fr": "P1 (urgente, rouge)"
+              }
+            },
+            {
+              "value": "p2",
+              "label": {
+                "en": "P2 (high, orange)",
+                "fr": "P2 (haute, orange)"
+              }
+            },
+            {
+              "value": "p3",
+              "label": {
+                "en": "P3 (medium, blue)",
+                "fr": "P3 (moyenne, bleue)"
+              }
+            },
+            {
+              "value": "p4",
+              "label": {
+                "en": "P4 (no priority)",
+                "fr": "P4 (sans priorité)"
+              }
+            }
+          ]
+        },
+        {
+          "key": "labels",
+          "type": "string",
+          "required": false,
+          "label": {
+            "en": "Labels, separated by commas (optional)",
+            "fr": "Étiquettes, séparées par des virgules (facultatif)"
+          },
+          "placeholder": {
+            "en": "errands, home",
+            "fr": "courses, maison"
+          }
+        },
+        {
+          "key": "quick_add",
+          "type": "boolean",
+          "required": false,
+          "label": {
+            "en": "Quick Add (read the text like the Todoist apps)",
+            "fr": "Ajout rapide (lire le texte comme les applications Todoist)"
+          },
+          "default": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "id",
+          "type": "string",
+          "label": {
+            "en": "Task id",
+            "fr": "Identifiant de la tâche"
+          }
+        },
+        {
+          "key": "url",
+          "type": "string",
+          "label": {
+            "en": "Link to the task",
+            "fr": "Lien vers la tâche"
+          }
+        },
+        {
+          "key": "content",
+          "type": "string",
+          "label": {
+            "en": "Task",
+            "fr": "Tâche"
+          }
+        },
+        {
+          "key": "project",
+          "type": "string",
+          "label": {
+            "en": "Project",
+            "fr": "Projet"
+          }
+        },
+        {
+          "key": "due",
+          "type": "string",
+          "label": {
+            "en": "Due (date and time)",
+            "fr": "Échéance (date et heure)"
+          }
+        }
+      ]
+    },
+    {
+      "key": "complete_task",
+      "label": {
+        "en": "Complete a Todoist task",
+        "fr": "Terminer une tâche Todoist"
+      },
+      "description": {
+        "en": "Checks off the task whose text matches (case and accents ignored, else the first one containing it, due first). \"Done\" is false when no open task matches. A recurring task moves to its next date.",
+        "fr": "Coche la tâche dont le texte correspond (sans tenir compte des majuscules ni des accents, sinon la première qui le contient, la plus urgente d'abord). « Fait » est faux si aucune tâche ouverte ne correspond. Une tâche récurrente passe à sa date suivante."
+      },
+      "timeout_seconds": 30,
+      "fields": [
+        {
+          "key": "task",
+          "type": "string",
+          "required": true,
+          "label": {
+            "en": "Task",
+            "fr": "Tâche"
+          },
+          "placeholder": {
+            "en": "Take out the bins",
+            "fr": "Sortir les poubelles"
+          }
+        },
+        {
+          "key": "project",
+          "type": "string",
+          "required": false,
+          "label": {
+            "en": "Only in this project (optional)",
+            "fr": "Seulement dans ce projet (facultatif)"
+          }
+        },
+        {
+          "key": "filter",
+          "type": "string",
+          "required": false,
+          "label": {
+            "en": "Only in this Todoist filter (optional)",
+            "fr": "Seulement dans ce filtre Todoist (facultatif)"
+          },
+          "placeholder": {
+            "en": "today | overdue",
+            "fr": "today | overdue"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "key": "done",
+          "type": "boolean",
+          "label": {
+            "en": "Done",
+            "fr": "Fait"
+          }
+        },
+        {
+          "key": "content",
+          "type": "string",
+          "label": {
+            "en": "Task completed",
+            "fr": "Tâche terminée"
+          }
+        },
+        {
+          "key": "project",
+          "type": "string",
+          "label": {
+            "en": "Project",
+            "fr": "Projet"
+          }
+        },
+        {
+          "key": "url",
+          "type": "string",
+          "label": {
+            "en": "Link to the task",
+            "fr": "Lien vers la tâche"
+          }
+        },
+        {
+          "key": "recurring",
+          "type": "boolean",
+          "label": {
+            "en": "Recurring task (moved to its next date)",
+            "fr": "Tâche récurrente (passée à sa date suivante)"
+          }
+        }
+      ]
+    },
+    {
+      "key": "get_tasks",
+      "label": {
+        "en": "Read Todoist tasks",
+        "fr": "Lire des tâches Todoist"
+      },
+      "description": {
+        "en": "The tasks of a Todoist filter (today and overdue by default), for a message or a condition that follows.",
+        "fr": "Les tâches d'un filtre Todoist (du jour et en retard par défaut), pour un message ou une condition qui suit."
+      },
+      "timeout_seconds": 30,
+      "fields": [
+        {
+          "key": "filter",
+          "type": "string",
+          "required": false,
+          "label": {
+            "en": "Todoist filter",
+            "fr": "Filtre Todoist"
+          },
+          "default": "today | overdue",
+          "placeholder": {
+            "en": "today | overdue",
+            "fr": "today | overdue"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "key": "count",
+          "type": "number",
+          "label": {
+            "en": "Number of tasks",
+            "fr": "Nombre de tâches"
+          }
+        },
+        {
+          "key": "overdue_count",
+          "type": "number",
+          "label": {
+            "en": "Overdue tasks",
+            "fr": "Tâches en retard"
+          }
+        },
+        {
+          "key": "list",
+          "type": "string",
+          "label": {
+            "en": "Tasks, one per line",
+            "fr": "Tâches, une par ligne"
+          }
+        },
+        {
+          "key": "next_task",
+          "type": "string",
+          "label": {
+            "en": "Next task",
+            "fr": "Prochaine tâche"
+          }
+        },
+        {
+          "key": "next_due",
+          "type": "string",
+          "label": {
+            "en": "Next task: due",
+            "fr": "Prochaine tâche : échéance"
+          }
+        },
+        {
+          "key": "next_project",
+          "type": "string",
+          "label": {
+            "en": "Next task: project",
+            "fr": "Prochaine tâche : projet"
+          }
+        },
+        {
+          "key": "next_priority",
+          "type": "string",
+          "label": {
+            "en": "Next task: priority",
+            "fr": "Prochaine tâche : priorité"
+          }
+        },
+        {
+          "key": "next_url",
+          "type": "string",
+          "label": {
+            "en": "Next task: link",
+            "fr": "Prochaine tâche : lien"
+          }
+        }
+      ]
+    }
+  ]
+}

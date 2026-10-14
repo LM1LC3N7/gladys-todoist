@@ -1,0 +1,11 @@
+{
+  "error": "Invalid token",
+  "error_code": 401,
+  "error_extra": {
+    "access_type": "access_token",
+    "event_id": "00000000000000000000000000000000",
+    "retry_after": 4
+  },
+  "error_tag": "AUTH_INVALID_TOKEN",
+  "http_code": 401
+}

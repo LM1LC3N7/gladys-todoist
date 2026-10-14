@@ -1,0 +1,10 @@
+This endpoint is deprecated.
+
+If you're reading this on a browser, there's a good chance you can change
+the v9 part on the URL to v1 and get away with it. ;)
+
+If you're using the API directly, please update your use case to rely
+on the new API endpoints, available under /api/v1/ prefixes.
+
+For more details, please see documentation at https://developer.todoist.com/
+
