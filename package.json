@@ -1,6 +1,6 @@
 {
   "name": "gladys-todoist",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Todoist for Gladys Assistant: today's tasks on the dashboard, add and complete tasks from scenes, scene triggers when a task is due, added or completed.",
   "type": "module",

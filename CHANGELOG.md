@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-14
+
 ### Added
 
 - Connection to a Todoist account with its personal API token (sent to
@@ -29,3 +31,6 @@ the notes of the version's GitHub Release.
   included), filtered by project and priority; the changes made through
   Gladys fire none of them.
 - "Test the account" button.
+
+[Unreleased]: https://github.com/LM1LC3N7/gladys-todoist/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/LM1LC3N7/gladys-todoist/releases/tag/v0.1.1
